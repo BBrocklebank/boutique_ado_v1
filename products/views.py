@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.contrib import messages
 from django.db.models import Q
+from django.db.models.functions import Lower
+
 from .models import Product, Category
 
 # Create your views here.
@@ -16,6 +18,13 @@ def all_products(request):
     direction = None
 
     if request.GET:
+        # 1. Looks for sort variable in request from main nav-nav.html
+        #    dropdown.
+        # 2. If 'name' then lowercase() used for non case sensitive search,
+        # 3. Annotating temp lowercase name field to products for sorting.
+        # 4. Checks for direction and if desc has been added as paramter in
+        #    main-nav.html then it reverses order so it's displayed desc
+
         if 'sort' in request.GET:
             sortkey = request.GET['sort']
             sort = sortkey
@@ -46,6 +55,7 @@ def all_products(request):
                 description__icontains=query)
             products = products.filter(queries)
 
+    # Returns current sorting to template view, for use in products.html
     current_sorting = f'{sort}_{direction}'
 
     context = {
